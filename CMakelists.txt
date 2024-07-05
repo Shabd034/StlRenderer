@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.10)
+project(cfd)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_OSX_ARCHITECTURES "arm64")
+add_definitions(-DGL_SILENCE_DEPRECATION)
+
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+
+# Include GLM
+find_path(GLM_INCLUDE_DIR glm/glm.hpp)
+include_directories(${GLM_INCLUDE_DIR} include)
+
+set(VERTEX_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/vertex_shader.glsl")
+set(FRAGMENT_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/fragment_shader.glsl")
+set(DESTINATION_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+add_custom_target(copy_file ALL
+    COMMAND ${CMAKE_COMMAND} -E copy ${VERTEX_SHADER} ${DESTINATION_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy ${FRAGMENT_SHADER} ${DESTINATION_DIRECTORY}
+)
+
+include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} include)
+
+file(GLOB SOURCES "main.cpp" "src/*.cpp" "src/*.c")
+
+add_executable(cfd ${SOURCES})
+
+target_link_libraries(cfd ${OPENGL_LIBRARIES} glfw)
