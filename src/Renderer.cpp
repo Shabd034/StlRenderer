@@ -60,56 +60,69 @@ Renderer::Renderer()
 void Renderer::SetupBuffers() 
 {
     float vertices[] = {
-        // positions          // colors
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-    };
+    // positions          // colors (RGB)
+    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
 
+    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+     0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+     0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+
+    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+};
+
+
+   // Generate and bind the Vertex Array Object (VAO)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
 
+    // Bind and set the vertex buffer data
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Unbind the buffer and the vertex array
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
     glBindVertexArray(0); 
 }
@@ -131,8 +144,10 @@ void Renderer::RenderScene()
     glm::mat4 projection    = glm::mat4(1.0f);
 
     model      = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(45.0f), ((float)width / (float)height), 0.1f, 100.0f);
-    view       = glm::translate(view, glm::vec3(0, 0, -3.0f));
+    projection = glm::perspective(glm::radians(gFov), ((float)width / (float)height), 0.1f, 100.0f);
+
+    // Might be a better way to do movement using camera
+    view       = glm::translate(view, glm::vec3(gCameraX, gCameraY, -3.0f));
 
     // pass them to the shaders
     shaderProgram.setMat4("model", model);
@@ -208,7 +223,7 @@ void Renderer::StartRender(int width, int height)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    gWindow = glfwCreateWindow(width, height, "OpenGL 4.1 Pyramid", NULL, NULL);
+    gWindow = glfwCreateWindow(width, height, "OpenGL 4.1 Cube", NULL, NULL);
     if (!gWindow) 
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
