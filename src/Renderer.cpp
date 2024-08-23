@@ -12,19 +12,27 @@
 float gFov = 45.0f;
 float gCameraX = 0.0f;
 float gCameraY = 0.0f;
+float gCameraZ = -3.0f;
+
 float gAngleX = 0.0f;
 float gAngleY = 0.0f;
+float gRotationX = 0.0f;
+float gRotationY = 0.0f;
+float gRotationViewX = 0.0f;
+float gRotationViewY = 0.0f;
 bool gIsDragging = false;
+bool gIsRotating = false;
 double gLastX = 0;
 double gLastY = 0;
 Shader* pShaderProgram = nullptr;
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 // Mouse button callback
 static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) 
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT) 
     {
-        if (action == GLFW_PRESS) 
+        if (action == GLFW_PRESS)
         {
             gIsDragging = true;
             glfwGetCursorPos(window, &gLastX, &gLastY);
@@ -34,12 +42,90 @@ static void MouseButtonCallback(GLFWwindow* window, int button, int action, int 
             gIsDragging = false;
         }
     }
+
+    else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            gIsRotating = true;
+            glfwGetCursorPos(window, &gLastX, &gLastY);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            gIsRotating = false;
+        }
+    }
+    
 }
 
 // Cursor position callback
 static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos) 
 {
-    // TODO
+    static double lastX = xpos, lastY = ypos;
+    double xOffset = xpos - lastX;
+    double yOffset = ypos - lastY;
+    lastX = xpos;
+    lastY = ypos;
+
+    // Sensitivity factor
+    float sensitivity = 0.3f;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    // Update rotation angles
+    if (gIsDragging) 
+    {
+        if ((gRotationY > 90.0f && gRotationY < 270.0f) || (gRotationY < -90.0f && gRotationY > -270.0f))
+        {
+            gRotationX -= xOffset;
+        }
+        else
+        {
+            gRotationX += xOffset;
+        }
+        gRotationY += yOffset;
+
+        if (gRotationX >= 360.0f)
+            gRotationX -= 360.0f;
+        if (gRotationX <= -360.0f)
+            gRotationX += 360.0f;
+        if (gRotationY >= 360.0f)
+            gRotationY -= 360.0f;
+        if (gRotationY <= -360.0f)
+            gRotationY += 360.0f;
+    }
+
+    if (gIsRotating)
+    {
+        if ((gRotationViewY > 90.0f && gRotationViewY < 270.0f) || (gRotationViewY < -90.0f && gRotationViewY > -270.0f))
+        {
+            gRotationViewX -= xOffset;
+        }
+        else
+        {
+            gRotationViewX += xOffset;
+        }
+        gRotationViewY += yOffset;
+
+        if (gRotationViewX >= 360.0f)
+            gRotationViewX -= 360.0f;
+        if (gRotationViewX <= -360.0f)
+            gRotationViewX += 360.0f;
+        if (gRotationViewY >= 360.0f)
+            gRotationViewY -= 360.0f;
+        if (gRotationViewY <= -360.0f)
+            gRotationViewY += 360.0f;
+    }
+}
+
+static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    float sensitivity = 0.5f;
+    gFov -= (float)sensitivity * yoffset;
+    if (gFov < 1.0f)
+        gFov = 1.0f;
+    if (gFov > 90.0f)
+        gFov = 90.0f;
 }
 
 // Window resize callback
@@ -60,66 +146,115 @@ Renderer::Renderer()
 void Renderer::SetupBuffers() 
 {
     float vertices[] = {
-    // positions          // colors (RGB)
-    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
-     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
-     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
-    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
-    -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  // Red
+    // positions          
+    -0.5f, -0.5f, -0.5f,  // Vertex 1
+     0.5f, -0.5f, -0.5f,  // Vertex 2
+     0.5f,  0.5f, -0.5f,  // Vertex 3
+     0.5f,  0.5f, -0.5f,  // Vertex 4
+    -0.5f,  0.5f, -0.5f,  // Vertex 5
+    -0.5f, -0.5f, -0.5f,  // Vertex 6
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
-     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
-     0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
-     0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
-    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  // Green
+    -0.5f, -0.5f,  0.5f,  // Vertex 7
+     0.5f, -0.5f,  0.5f,  // Vertex 8
+     0.5f,  0.5f,  0.5f,  // Vertex 9
+     0.5f,  0.5f,  0.5f,  // Vertex 10
+    -0.5f,  0.5f,  0.5f,  // Vertex 11
+    -0.5f, -0.5f,  0.5f,  // Vertex 12
 
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
-    -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,  // Blue
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  // Blue
+    -0.5f,  0.5f,  0.5f,  // Vertex 13
+    -0.5f,  0.5f, -0.5f,  // Vertex 14
+    -0.5f, -0.5f, -0.5f,  // Vertex 15
+    -0.5f, -0.5f, -0.5f,  // Vertex 16
+    -0.5f, -0.5f,  0.5f,  // Vertex 17
+    -0.5f,  0.5f,  0.5f,  // Vertex 18
 
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
-     0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  // Yellow
+     0.5f,  0.5f,  0.5f,  // Vertex 19
+     0.5f,  0.5f, -0.5f,  // Vertex 20
+     0.5f, -0.5f, -0.5f,  // Vertex 21
+     0.5f, -0.5f, -0.5f,  // Vertex 22
+     0.5f, -0.5f,  0.5f,  // Vertex 23
+     0.5f,  0.5f,  0.5f,  // Vertex 24
 
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
-     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
-     0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
-    -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  // Cyan
+    -0.5f, -0.5f, -0.5f,  // Vertex 25
+     0.5f, -0.5f, -0.5f,  // Vertex 26
+     0.5f, -0.5f,  0.5f,  // Vertex 27
+     0.5f, -0.5f,  0.5f,  // Vertex 28
+    -0.5f, -0.5f,  0.5f,  // Vertex 29
+    -0.5f, -0.5f, -0.5f,  // Vertex 30
 
-    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
-     0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
-    -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f,  // Magenta
+    -0.5f,  0.5f, -0.5f,  // Vertex 31
+     0.5f,  0.5f, -0.5f,  // Vertex 32
+     0.5f,  0.5f,  0.5f,  // Vertex 33
+     0.5f,  0.5f,  0.5f,  // Vertex 34
+    -0.5f,  0.5f,  0.5f,  // Vertex 35
+    -0.5f,  0.5f, -0.5f,  // Vertex 36
+};
+
+float normals[] = {
+    0.0f,  0.0f, -1.0f,
+    0.0f,  0.0f, -1.0f, 
+    0.0f,  0.0f, -1.0f, 
+    0.0f,  0.0f, -1.0f, 
+    0.0f,  0.0f, -1.0f, 
+    0.0f,  0.0f, -1.0f, 
+
+    0.0f,  0.0f, 1.0f,
+    0.0f,  0.0f, 1.0f,
+    0.0f,  0.0f, 1.0f,
+    0.0f,  0.0f, 1.0f,
+    0.0f,  0.0f, 1.0f,
+    0.0f,  0.0f, 1.0f,
+
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f
 };
 
 
    // Generate and bind the Vertex Array Object (VAO)
     glGenVertexArrays(1, &VAO);
+    //glGenVertexArrays(1, &lightVAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
+    //glBindVertexArray(lightVAO);
 
     // Bind and set the vertex buffer data
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Temoorary bind of normals
+    glGenBuffers(1, &lightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lightVAO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
 
     // Unbind the buffer and the vertex array
@@ -137,22 +272,33 @@ void Renderer::RenderScene()
 
     Shader shaderProgram = *pShaderProgram;
     shaderProgram.Use();
+    shaderProgram.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+    shaderProgram.setVec3("color", 1.0f, 0.5f, 0.31f);
     
     // create transformations
     glm::mat4 model         = glm::mat4(1.0f);
     glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     glm::mat4 projection    = glm::mat4(1.0f);
 
-    model      = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    model      = glm::rotate(model, glm::radians(gRotationY), glm::vec3(1.0f, 0.0f, 0.0f));
+    model      = glm::rotate(model, glm::radians(gRotationX), glm::vec3(0.0f, 1.0f, 0.0f));
     projection = glm::perspective(glm::radians(gFov), ((float)width / (float)height), 0.1f, 100.0f);
 
     // Might be a better way to do movement using camera
-    view       = glm::translate(view, glm::vec3(gCameraX, gCameraY, -3.0f));
+    view      = glm::rotate(view, glm::radians(gRotationViewY), glm::vec3(1.0f, 0.0f, 0.0f));
+    view      = glm::rotate(view, glm::radians(gRotationViewX), glm::vec3(0.0f, 1.0f, 0.0f));
+    view      = glm::translate(view, glm::vec3(gCameraX, gCameraY, gCameraZ));
 
     // pass them to the shaders
     shaderProgram.setMat4("model", model);
     shaderProgram.setMat4("view", view);
     shaderProgram.setMat4("projection", projection);
+
+    glm::mat4 viewInverse = glm::inverse(view);
+    glm::vec3 cameraPosition = glm::vec3(viewInverse[3]);
+    shaderProgram.setVec3("viewPos", cameraPosition);
+
+    shaderProgram.setVec3("lightPos", lightPos);
 
     // draw our first triangle
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
@@ -168,18 +314,6 @@ void Renderer::ProcessInput()
 
     if (glfwGetKey(gWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(gWindow, true);
-
-    if (glfwGetKey(gWindow, GLFW_KEY_I) == GLFW_PRESS && gFov > 10.0f) 
-    {
-        gFov -= 0.5f;
-        Reshape(gWindow, width, height);
-    }
-
-    if (glfwGetKey(gWindow, GLFW_KEY_O) == GLFW_PRESS && gFov < 100.0f) 
-    {
-        gFov += 0.5f;
-        Reshape(gWindow, width, height);
-    }
 
     if (glfwGetKey(gWindow, GLFW_KEY_LEFT) == GLFW_PRESS) 
     {
@@ -205,13 +339,30 @@ void Renderer::ProcessInput()
         Reshape(gWindow, width, height);
     }
 
+    if (glfwGetKey(gWindow, GLFW_KEY_W) == GLFW_PRESS) 
+    {
+        gCameraZ += 0.05f;
+        Reshape(gWindow, width, height);
+    }
+
+    if (glfwGetKey(gWindow, GLFW_KEY_S) == GLFW_PRESS) 
+    {
+        gCameraZ -= 0.05f;
+        Reshape(gWindow, width, height);
+    }
+
     if (glfwGetKey(gWindow, GLFW_KEY_R) == GLFW_PRESS) 
     {
         gCameraX = 0.0f;
         gCameraY = 0.0f;
+        gCameraZ = -3.0f;
         gAngleX = 0.0f;
         gAngleY = 0.0f;
         gFov = 45.0f;
+        gRotationX = 0.0f;
+        gRotationY = 0.0f;
+        gRotationViewX = 0.0f;
+        gRotationViewY = 0.0f;
         Reshape(gWindow, width, height);
     }
 }
@@ -222,6 +373,7 @@ void Renderer::StartRender(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     
     gWindow = glfwCreateWindow(width, height, "OpenGL 4.1 Cube", NULL, NULL);
     if (!gWindow) 
@@ -247,11 +399,15 @@ void Renderer::StartRender(int width, int height)
     // Set the cursor position callback
     glfwSetCursorPosCallback(gWindow, CursorPositionCallback);
 
+    // Set the scroll callback
+    glfwSetScrollCallback(gWindow, MouseScrollCallback);
+
     Shader shaderProgram = Shader("vertex_shader.glsl", "fragment_shader.glsl");
     pShaderProgram = &shaderProgram;
     SetupBuffers();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
 
     while (!glfwWindowShouldClose(gWindow)) 
     {
@@ -262,7 +418,7 @@ void Renderer::StartRender(int width, int height)
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &lightVAO);
     shaderProgram.Delete();
 
     const GLubyte* renderer = glGetString(GL_RENDERER); // Get renderer string

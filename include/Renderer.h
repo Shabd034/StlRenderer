@@ -15,6 +15,6 @@ private:
     void RenderScene();
     void ProcessInput();
     
-    unsigned int VAO, VBO, EBO;
+    unsigned int VAO, VBO, lightVAO;
     GLFWwindow* gWindow;
 };

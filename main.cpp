@@ -9,5 +9,5 @@ int main()
 }
 
 /*
-https://learnopengl.com/Getting-started/Camera
+https://learnopengl.com/Lighting/Colors
 */
