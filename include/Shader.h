@@ -17,6 +17,7 @@ class Shader
     public:
         uint ID;
         Shader(std::string vertexPath, std::string fragmentPath);
+        Shader(std::string geometryPath, std::string vertexPath, std::string fragmentPath);
         void Use();
         void Delete();
 
@@ -34,6 +35,7 @@ class Shader
         void setMat2(const std::string &name, const glm::mat2 &mat);
         void setMat3(const std::string &name, const glm::mat3 &mat);
         void setMat4(const std::string &name, const glm::mat4 &mat);
+        void setFloat(const std::string &name, float value);
 
     private:
         std::string ReadShaderSource(const std::string& filePath);

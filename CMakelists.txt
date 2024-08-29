@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(cfd)
+project(stlRenderer)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
@@ -14,17 +14,27 @@ include_directories(${GLM_INCLUDE_DIR} include)
 
 set(VERTEX_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/vertex_shader.glsl")
 set(FRAGMENT_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/fragment_shader.glsl")
+set(GEOMETRY_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/geometry_shader.glsl")
+# testing
+set(NORMAL_VERTEX_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/NormalTesting/visualize_normal_vertex.glsl")
+set(NORMAL_FRAGMENT_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/NormalTesting/visualize_normal_fragment.glsl")
+set(NORMAL_GEOMETRY_SHADER "${CMAKE_CURRENT_SOURCE_DIR}/src/NormalTesting/visualize_normal_geometry.glsl")
 set(DESTINATION_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 add_custom_target(copy_file ALL
     COMMAND ${CMAKE_COMMAND} -E copy ${VERTEX_SHADER} ${DESTINATION_DIRECTORY}
     COMMAND ${CMAKE_COMMAND} -E copy ${FRAGMENT_SHADER} ${DESTINATION_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy ${GEOMETRY_SHADER} ${DESTINATION_DIRECTORY}
+    # testing
+    COMMAND ${CMAKE_COMMAND} -E copy ${NORMAL_VERTEX_SHADER} ${DESTINATION_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy ${NORMAL_FRAGMENT_SHADER} ${DESTINATION_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy ${NORMAL_GEOMETRY_SHADER} ${DESTINATION_DIRECTORY}
 )
 
 include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} include)
 
 file(GLOB SOURCES "main.cpp" "src/*.cpp" "src/*.c")
 
-add_executable(cfd ${SOURCES})
+add_executable(stlRenderer ${SOURCES})
 
-target_link_libraries(cfd ${OPENGL_LIBRARIES} glfw)
+target_link_libraries(stlRenderer ${OPENGL_LIBRARIES} glfw)
