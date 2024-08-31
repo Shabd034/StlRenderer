@@ -9,7 +9,7 @@ typedef struct MaterialProperties
     glm::vec3 color; // Define color as needed
 } Material;
 
-enum MaterialType 
+typedef enum 
 {
     EMERALD,
     JADE,
@@ -37,7 +37,7 @@ enum MaterialType
     WHITE_RUBBER,
     YELLOW_RUBBER,
     MATERIAL_COUNT // Helper value to get the count of materials
-};
+} MaterialType;
 
 const Material materialsTypes[MATERIAL_COUNT] = 
 {
@@ -217,4 +217,32 @@ const Material materialsTypes[MATERIAL_COUNT] =
       glm::vec3(0.7f,      0.7f,      0.04f),     // Specular
       0.078125f,                                 // Shininess
       glm::vec3(1.0f, 1.0f, 0.0f) }              // Color
+};
+
+typedef enum
+{
+    RED,
+    ALUMINUM_METAL,
+    COPPER_METAL,
+    SILVER_METAL,
+    GOLD_METAL,
+    METAL_COUNT // Represents the total number of metals
+} MetalType;
+
+// Define the Metal struct
+typedef struct MetalInfo {
+    glm::vec3 albedo;      // Base color of the metal
+    float metallic;   // Metallic factor (typically 1.0 for metals)
+    float roughness;  // Roughness of the surface
+    float ao;         // Ambient Occlusion (general setting, can be scene-dependent)
+} Metal;
+
+// Initialize an array of Metal structs with specific properties
+const Metal metals[METAL_COUNT] =
+{
+    {glm::vec3(0.5, 0.0, 0.0), 0.0, 0.05, 1.0}, // PLASTIC
+    {glm::vec3(0.91, 0.92, 0.92), 0.1, 0.2, 1.0}, // ALUMINUM
+    {glm::vec3(0.95, 0.64, 0.54), 0.4, 0.25, 1.0}, // COPPER
+    {glm::vec3(0.97, 0.96, 0.91), 0.8, 0.15, 1.0}, // SILVER
+    {glm::vec3(1.0, 0.766, 0.336), 1.0, 0.25, 1.0}  // GOLD
 };

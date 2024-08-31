@@ -11,6 +11,7 @@
 #include "Materials.h"
 
 //#define TESTING
+//#define BLINN_PHONG
 
 float gFov = 45.0f;
 float gCameraX = 0.0f;
@@ -36,12 +37,16 @@ Shader* pNormalShaderProgram = nullptr;
 // positions of the point lights
 glm::vec3 gPointLightPositions[] = 
 {
-    glm::vec3(-4.0f,  2.0f,  2.0f),
-    glm::vec3(4.0f, 2.0f, 2.0f),
-    glm::vec3(0.0f,  4.0f, 2.0f)
+    glm::vec3(-2.5f,  -2.0f,  -1.0f),
+    glm::vec3(2.5f, -2.0f, -1.0f),
+    glm::vec3(0.0f,  3.0f, 2.0f)
 };
 
+#ifdef BLINN_PHONG
 int gMaterialType = ALUMINUM;
+#else
+int gMaterialType = RED;
+#endif
 bool gButtonHeld = false; // Used to prevent multiple key presses for material change
 
 // Mouse button callback
@@ -160,54 +165,8 @@ Renderer::Renderer()
     }
 }
 
-void Renderer::SetupBuffers() 
+void Renderer::SetupBuffers(const float vertices[], int vertexCount) 
 {
-    float vertices[] = 
-    {
-        // Back face
-        -0.5f, -0.5f, -0.5f, // Bottom-left
-        0.5f,  0.5f, -0.5f, // top-right
-        0.5f, -0.5f, -0.5f, // bottom-right         
-        0.5f,  0.5f, -0.5f, // top-right
-        -0.5f, -0.5f, -0.5f, // bottom-left
-        -0.5f,  0.5f, -0.5f, // top-left
-        // Front face
-        -0.5f, -0.5f,  0.5f, // bottom-left
-        0.5f, -0.5f,  0.5f, // bottom-right
-        0.5f,  0.5f,  0.5f, // top-right
-        0.5f,  0.5f,  0.5f, // top-right
-        -0.5f,  0.5f,  0.5f, // top-left
-        -0.5f, -0.5f,  0.5f, // bottom-left
-        // Left face
-        -0.5f,  0.5f,  0.5f, // top-right
-        -0.5f,  0.5f, -0.5f, // top-left
-        -0.5f, -0.5f, -0.5f, // bottom-left
-        -0.5f, -0.5f, -0.5f, // bottom-left
-        -0.5f, -0.5f,  0.5f, // bottom-right
-        -0.5f,  0.5f,  0.5f, // top-right
-        // Right face
-        0.5f,  0.5f,  0.5f, // top-left
-        0.5f, -0.5f, -0.5f, // bottom-right
-        0.5f,  0.5f, -0.5f, // top-right         
-        0.5f, -0.5f, -0.5f, // bottom-right
-        0.5f,  0.5f,  0.5f, // top-left
-        0.5f, -0.5f,  0.5f, // bottom-left     
-        // Bottom face
-        -0.5f, -0.5f, -0.5f, // top-right
-        0.5f, -0.5f, -0.5f, // top-left
-        0.5f, -0.5f,  0.5f, // bottom-left
-        0.5f, -0.5f,  0.5f, // bottom-left
-        -0.5f, -0.5f,  0.5f, // bottom-right
-        -0.5f, -0.5f, -0.5f, // top-right
-        // Top face
-        -0.5f,  0.5f, -0.5f, // top-left
-        0.5f,  0.5f,  0.5f, // bottom-right
-        0.5f,  0.5f, -0.5f, // top-right     
-        0.5f,  0.5f,  0.5f, // bottom-right
-        -0.5f,  0.5f, -0.5f, // top-left
-        -0.5f,  0.5f,  0.5f // bottom-left
-    };
-
    // Generate and bind the Vertex Array Object (VAO)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -215,7 +174,7 @@ void Renderer::SetupBuffers()
 
     // Bind and set the vertex buffer data
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -230,8 +189,10 @@ static void SetLighting()
 {
     Shader shaderProgram = *pShaderProgram;
 
+#ifdef BLINN_PHONG
+
     // directional light
-    shaderProgram.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    shaderProgram.setVec3("dirLight.direction", -1.0f, -1.0f, -1.0f);
     shaderProgram.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
     shaderProgram.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
     shaderProgram.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
@@ -259,11 +220,26 @@ static void SetLighting()
     shaderProgram.setFloat("pointLights[2].constant", 1.0f);
     shaderProgram.setFloat("pointLights[2].linear", 0.09f);
     shaderProgram.setFloat("pointLights[2].quadratic", 0.032f);
+
+#else
+    shaderProgram.setVec3("lightColors[0]", 300.0f, 300.0f, 300.0f);
+    shaderProgram.setVec3("lightPositions[0]", -10.0f,  10.0f, 10.0f);
+
+    shaderProgram.setVec3("lightColors[1]", 300.0f, 300.0f, 300.0f);
+    shaderProgram.setVec3("lightPositions[1]", 10.0f,  10.0f, 10.0f);
+
+    shaderProgram.setVec3("lightColors[2]", 300.0f, 300.0f, 300.0f);
+    shaderProgram.setVec3("lightPositions[2]", -10.0f, -10.0f, 10.0f);
+
+    shaderProgram.setVec3("lightColors[3]", 300.0f, 300.0f, 300.0f);
+    shaderProgram.setVec3("lightPositions[3]", 10.0f, -10.0f, 10.0f);
+#endif
 }
 
 void Renderer::RenderScene() 
 {
-    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
+    //glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     int width, height;
@@ -285,7 +261,6 @@ void Renderer::RenderScene()
     view      = glm::translate(view, glm::vec3(gCameraX, gCameraY, gCameraZ));
 
     shaderProgram.Use();
-    shaderProgram.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
     // pass them to the shaders
     shaderProgram.setMat4("model", model);
     shaderProgram.setMat4("view", view);
@@ -295,6 +270,8 @@ void Renderer::RenderScene()
     glm::vec3 cameraPosition = glm::vec3(viewInverse[3]);
     shaderProgram.setVec3("viewPos", cameraPosition);
 
+#ifdef BLINN_PHONG
+
     // Material properties
     Material material = materialsTypes[gMaterialType];
     shaderProgram.setVec3("material.ambient", material.ambient);
@@ -302,6 +279,17 @@ void Renderer::RenderScene()
     shaderProgram.setVec3("material.specular", material.specular);
     shaderProgram.setFloat("material.shininess", material.shininess);
     shaderProgram.setVec3("color", material.color);
+
+#else
+
+    // Material properties
+    Metal metal = metals[gMaterialType];
+    shaderProgram.setVec3("albedo", metal.albedo);
+    shaderProgram.setFloat("roughness", metal.roughness);
+    shaderProgram.setFloat("metallic", metal.metallic);
+    shaderProgram.setFloat("ao", metal.ao);
+
+#endif
 
     // Light properties
     SetLighting();
@@ -361,8 +349,13 @@ void Renderer::ProcessInput()
         {
             gButtonHeld = true;
             gMaterialType++;
+#ifdef BLINN_PHONG
             if (gMaterialType >= MATERIAL_COUNT)
                 gMaterialType = 0;
+#else
+            if (gMaterialType >= METAL_COUNT)
+                gMaterialType = 0;
+#endif
         }
     }
 
@@ -399,7 +392,7 @@ void Renderer::ProcessInput()
     }
 }
 
-void Renderer::StartRender(int width, int height) 
+void Renderer::StartRender(int width, int height, const float vertices[], const int vertexCount) 
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -408,7 +401,7 @@ void Renderer::StartRender(int width, int height)
     glfwWindowHint(GLFW_SAMPLES, 4);
     
     gWindow = glfwCreateWindow(width, height, "STL Renderer", NULL, NULL);
-    if (!gWindow) 
+    if (!gWindow)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -434,17 +427,25 @@ void Renderer::StartRender(int width, int height)
     // Set the scroll callback
     glfwSetScrollCallback(gWindow, MouseScrollCallback);
 
+#ifdef BLINN_PHONG
+    Shader shaderProgram = Shader("geometry_shader.glsl", "vertex_shader.glsl", "blinn_phong_fragment_shader.glsl");
+#else
+    Shader shaderProgram = Shader("geometry_shader.glsl", "vertex_shader.glsl", "pbr_fragment_shader.glsl");
+#endif
 
-    Shader shaderProgram = Shader("geometry_shader.glsl", "vertex_shader.glsl", "fragment_shader.glsl");
 #ifdef TESTING
     Shader normalShaderProgram = Shader("visualize_normal_geometry.glsl", "visualize_normal_vertex.glsl", "visualize_normal_fragment.glsl");
     pNormalShaderProgram = &normalShaderProgram;
 #endif
     pShaderProgram = &shaderProgram;
-    SetupBuffers();
+    SetupBuffers(vertices, vertexCount);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
+
+#ifdef BLINN_PHONG
+    glEnable(GL_FRAMEBUFFER_SRGB);
+#endif
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -459,7 +460,6 @@ void Renderer::StartRender(int width, int height)
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &lightVAO);
     shaderProgram.Delete();
 
 #ifdef TESTING

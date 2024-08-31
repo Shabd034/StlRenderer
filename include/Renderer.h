@@ -7,14 +7,14 @@ class Renderer
 {
 public:
     Renderer();
-    void StartRender(int width, int height);
+    void StartRender(int width, int height, const float vertices[], const int vertexCount);
     GLFWwindow* GetWindow();
 
 private:
-    void SetupBuffers();
+    void SetupBuffers(const float vertices[], const int vertexCount);
     void RenderScene();
     void ProcessInput();
     
-    unsigned int VAO, VBO, lightVAO;
+    unsigned int VAO, VBO;
     GLFWwindow* gWindow;
 };
