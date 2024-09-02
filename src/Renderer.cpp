@@ -13,6 +13,8 @@
 //#define TESTING
 //#define BLINN_PHONG
 
+int gNumTriangles = 0;
+
 float gFov = 45.0f;
 float gCameraX = 0.0f;
 float gCameraY = 0.0f;
@@ -20,12 +22,10 @@ float gCameraZ = -3.0f;
 
 float gAngleX = 0.0f;
 float gAngleY = 0.0f;
-float gRotationX = 0.0f;
-float gRotationY = 0.0f;
-float gRotationViewX = 0.0f;
-float gRotationViewY = 0.0f;
+
+glm::mat4 gRotationMatrix = glm::mat4(1.0f); // Start with identity matrix
+
 bool gIsDragging = false;
-bool gIsRotating = false;
 double gLastX = 0;
 double gLastY = 0;
 
@@ -64,23 +64,22 @@ static void MouseButtonCallback(GLFWwindow* window, int button, int action, int 
             gIsDragging = false;
         }
     }
-
-    else if (button == GLFW_MOUSE_BUTTON_RIGHT)
-    {
-        if (action == GLFW_PRESS)
-        {
-            gIsRotating = true;
-            glfwGetCursorPos(window, &gLastX, &gLastY);
-        }
-        else if (action == GLFW_RELEASE)
-        {
-            gIsRotating = false;
-        }
-    }
-    
 }
 
-// Cursor position callback
+void UpdateRotation(float xOffset, float yOffset) 
+{
+    glm::vec3 xAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 yAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    // Create rotation matrices for x and y offsets
+    glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(yOffset), xAxis);
+    glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(xOffset), yAxis);
+
+    // Combine the rotations by multiplying them in the correct order
+    gRotationMatrix = rotX * rotY * gRotationMatrix;
+}
+
+//Cursor position callback
 static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos) 
 {
     static double lastX = xpos, lastY = ypos;
@@ -97,46 +96,7 @@ static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
     // Update rotation angles
     if (gIsDragging) 
     {
-        if ((gRotationY > 90.0f && gRotationY < 270.0f) || (gRotationY < -90.0f && gRotationY > -270.0f))
-        {
-            gRotationX -= xOffset;
-        }
-        else
-        {
-            gRotationX += xOffset;
-        }
-        gRotationY += yOffset;
-
-        if (gRotationX >= 360.0f)
-            gRotationX -= 360.0f;
-        if (gRotationX <= -360.0f)
-            gRotationX += 360.0f;
-        if (gRotationY >= 360.0f)
-            gRotationY -= 360.0f;
-        if (gRotationY <= -360.0f)
-            gRotationY += 360.0f;
-    }
-
-    if (gIsRotating)
-    {
-        if ((gRotationViewY > 90.0f && gRotationViewY < 270.0f) || (gRotationViewY < -90.0f && gRotationViewY > -270.0f))
-        {
-            gRotationViewX -= xOffset;
-        }
-        else
-        {
-            gRotationViewX += xOffset;
-        }
-        gRotationViewY += yOffset;
-
-        if (gRotationViewX >= 360.0f)
-            gRotationViewX -= 360.0f;
-        if (gRotationViewX <= -360.0f)
-            gRotationViewX += 360.0f;
-        if (gRotationViewY >= 360.0f)
-            gRotationViewY -= 360.0f;
-        if (gRotationViewY <= -360.0f)
-            gRotationViewY += 360.0f;
+        UpdateRotation(xOffset, yOffset);
     }
 }
 
@@ -165,16 +125,16 @@ Renderer::Renderer()
     }
 }
 
-void Renderer::SetupBuffers(const float vertices[], int vertexCount) 
+void Renderer::SetupBuffers(const float vertices[]) 
 {
-   // Generate and bind the Vertex Array Object (VAO)
+    // Generate and bind the Vertex Array Object (VAO)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
 
     // Bind and set the vertex buffer data
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, gNumTriangles * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -238,8 +198,8 @@ static void SetLighting()
 
 void Renderer::RenderScene() 
 {
-    //glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
+    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     int width, height;
@@ -247,18 +207,12 @@ void Renderer::RenderScene()
 
     Shader shaderProgram = *pShaderProgram;
     // create transformations
-    glm::mat4 model         = glm::mat4(1.0f);
+    glm::mat4 model         = gRotationMatrix;
     glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     glm::mat4 projection    = glm::mat4(1.0f);
 
-    model      = glm::rotate(model, glm::radians(gRotationY), glm::vec3(1.0f, 0.0f, 0.0f));
-    model      = glm::rotate(model, glm::radians(gRotationX), glm::vec3(0.0f, 1.0f, 0.0f));
     projection = glm::perspective(glm::radians(gFov), ((float)width / (float)height), 0.1f, 100.0f);
-
-    // Might be a better way to do movement using camera
-    view      = glm::rotate(view, glm::radians(gRotationViewY), glm::vec3(1.0f, 0.0f, 0.0f));
-    view      = glm::rotate(view, glm::radians(gRotationViewX), glm::vec3(0.0f, 1.0f, 0.0f));
-    view      = glm::translate(view, glm::vec3(gCameraX, gCameraY, gCameraZ));
+    view       = glm::translate(view, glm::vec3(gCameraX, gCameraY, gCameraZ));
 
     shaderProgram.Use();
     // pass them to the shaders
@@ -295,7 +249,7 @@ void Renderer::RenderScene()
     SetLighting();
 
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(GL_TRIANGLES, 0, gNumTriangles);
 
 #ifdef TESTING
     Shader normalShaderProgram = *pNormalShaderProgram;
@@ -305,7 +259,7 @@ void Renderer::RenderScene()
     normalShaderProgram.setMat4("model", model);
 
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(GL_TRIANGLES, 0, gNumTriangles);
 #endif
     
     glfwSwapBuffers(gWindow);
@@ -318,30 +272,6 @@ void Renderer::ProcessInput()
 
     if (glfwGetKey(gWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(gWindow, true);
-
-    if (glfwGetKey(gWindow, GLFW_KEY_LEFT) == GLFW_PRESS) 
-    {
-        gCameraX += 0.05f;
-        Reshape(gWindow, width, height);
-    }
-
-    if (glfwGetKey(gWindow, GLFW_KEY_RIGHT) == GLFW_PRESS) 
-    {
-        gCameraX -= 0.05f;
-        Reshape(gWindow, width, height);
-    }
-
-    if (glfwGetKey(gWindow, GLFW_KEY_UP) == GLFW_PRESS) 
-    {
-        gCameraY -= 0.05f;
-        Reshape(gWindow, width, height);
-    }
-
-    if (glfwGetKey(gWindow, GLFW_KEY_DOWN) == GLFW_PRESS) 
-    {
-        gCameraY += 0.05f;
-        Reshape(gWindow, width, height);
-    }
 
     if (glfwGetKey(gWindow, GLFW_KEY_M) == GLFW_PRESS) 
     {
@@ -364,18 +294,6 @@ void Renderer::ProcessInput()
         gButtonHeld = false;
     }
 
-    if (glfwGetKey(gWindow, GLFW_KEY_W) == GLFW_PRESS) 
-    {
-        gCameraZ += 0.05f;
-        Reshape(gWindow, width, height);
-    }
-
-    if (glfwGetKey(gWindow, GLFW_KEY_S) == GLFW_PRESS) 
-    {
-        gCameraZ -= 0.05f;
-        Reshape(gWindow, width, height);
-    }
-
     if (glfwGetKey(gWindow, GLFW_KEY_R) == GLFW_PRESS) 
     {
         gCameraX = 0.0f;
@@ -384,10 +302,9 @@ void Renderer::ProcessInput()
         gAngleX = 0.0f;
         gAngleY = 0.0f;
         gFov = 45.0f;
-        gRotationX = 0.0f;
-        gRotationY = 0.0f;
-        gRotationViewX = 0.0f;
-        gRotationViewY = 0.0f;
+        gRotationMatrix = glm::mat4(1.0f);
+        // gRotationX = 0.0f;
+        // gRotationY = 0.0f;
         Reshape(gWindow, width, height);
     }
 }
@@ -438,7 +355,8 @@ void Renderer::StartRender(int width, int height, const float vertices[], const 
     pNormalShaderProgram = &normalShaderProgram;
 #endif
     pShaderProgram = &shaderProgram;
-    SetupBuffers(vertices, vertexCount);
+    gNumTriangles = vertexCount / 3;
+    SetupBuffers(vertices);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);

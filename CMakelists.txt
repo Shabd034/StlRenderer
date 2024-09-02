@@ -35,7 +35,7 @@ add_custom_target(copy_file ALL
 
 include_directories(${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} include)
 
-file(GLOB SOURCES "main.cpp" "src/*.cpp" "src/*.c")
+file(GLOB SOURCES "src/*.cpp" "src/*.c")
 
 add_executable(stlRenderer ${SOURCES})
 

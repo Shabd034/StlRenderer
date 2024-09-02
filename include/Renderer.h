@@ -11,7 +11,7 @@ public:
     GLFWwindow* GetWindow();
 
 private:
-    void SetupBuffers(const float vertices[], const int vertexCount);
+    void SetupBuffers(const float vertices[]);
     void RenderScene();
     void ProcessInput();
     
