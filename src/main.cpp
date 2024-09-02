@@ -93,7 +93,7 @@ std::vector<float> parseSTL(const std::string& filePath)
 int main()
 {
     // Change file as required
-    std::string filePath = "/Users/shabdgupta/Documents/stl/examples/F1_RB16B.stl";  // Replace with your STL file path
+    std::string filePath = "<path_to_file>.stl";
 
     std::vector<float> vertices = parseSTL(filePath); 
 

@@ -199,7 +199,6 @@ static void SetLighting()
 void Renderer::RenderScene() 
 {
     glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
-    //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     int width, height;
@@ -208,7 +207,7 @@ void Renderer::RenderScene()
     Shader shaderProgram = *pShaderProgram;
     // create transformations
     glm::mat4 model         = gRotationMatrix;
-    glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+    glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
 
     projection = glm::perspective(glm::radians(gFov), ((float)width / (float)height), 0.1f, 100.0f);
@@ -303,8 +302,6 @@ void Renderer::ProcessInput()
         gAngleY = 0.0f;
         gFov = 45.0f;
         gRotationMatrix = glm::mat4(1.0f);
-        // gRotationX = 0.0f;
-        // gRotationY = 0.0f;
         Reshape(gWindow, width, height);
     }
 }
