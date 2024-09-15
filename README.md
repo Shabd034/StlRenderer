@@ -1,9 +1,7 @@
 The following results were obtained:
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/3974f64d-66f2-43bc-a323-73a878f2cb54">
+<img width="1191" alt="Screenshot 2024-09-14 at 9 07 12 PM" src="https://github.com/user-attachments/assets/4b7b503c-33a6-4b30-b235-7b1f68ddad7b">
 
+<img width="1136" alt="Screenshot 2024-09-14 at 9 08 20 PM" src="https://github.com/user-attachments/assets/72a75db8-cbd6-4b1b-95cf-7d74ab22c6b5">
 
-<img width="450" alt="image" src="https://github.com/user-attachments/assets/a622fc24-f4df-426a-babf-1093997059e6">
-
-
-<img width="450" alt="image" src="https://github.com/user-attachments/assets/704eb9ff-cf6f-4d8b-b24a-ceb669474f4b">
+<img width="1100" alt="Screenshot 2024-09-14 at 9 09 53 PM" src="https://github.com/user-attachments/assets/8b8bd973-2b26-4d0a-bef7-95ffcb460df4">
